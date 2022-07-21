@@ -6,10 +6,10 @@ import {
     StyleSheet,
     ScrollView,
     FlatList,
-    SafeAreaView,
     ActivityIndicator,
     Pressable
 } from "react-native";
+import {SafeAreaView} from 'react-native-safe-area-context';
 import axios from "axios";
 import base64 from 'react-native-base64'
 import moment from "moment";
@@ -19,21 +19,25 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import EvilIcons from "react-native-vector-icons/EvilIcons";
 import VideoListItem from "./VideoListItem";
 import styles from "./styles";
-import VideoAccueil from "../VideoAccueil";
 import VideoPlayer from "../VideoPlayer/VideoPlayer";
-import videoComments from "../Commentaire/VideoComments";
-import BottomSheet from "@gorhom/bottom-sheet";
+import BottomSheet, {BottomSheetModal, BottomSheetModalProvider} from "@gorhom/bottom-sheet";
+import VideoComments from "../Commentaire/VideoComments";
+import {useRoute} from "@react-navigation/native";
 
 const VideoScreen = () => {
+    const route = useRoute();
+    const id = route.params.id;
+    const encode = base64.encode(String(id));
     const [video, setVideo] = useState([]);
     const [videoAgo, setVideoAgo] = useState('');
-    const [userId, setUserId] = useState(null);
     const [username, setUsername] = useState('');
     const [liked, setLiked] = useState(false);
     const [disliked, setDisliked] = useState(false);
     const [likes, setLikes] = useState(0);
     const [dislikes, setDislikes] = useState(0);
     const [subscribers, setSubscribers] = useState(0);
+    const [userImage, setUserImage] = useState('');
+    const [avatarName, setAvatarName] = useState("");
     const handleLike = () => {
         if (likes < 0) {
             setLikes(0);
@@ -70,16 +74,43 @@ const VideoScreen = () => {
             setLiked(false)
         }
     }
-
-    const getUser = async (userId) => {
+    const getVideo = async (encode) => {
         try {
-            const response = await axios.get(`http://10.0.2.2:8000/api/user/${userId}/get`, {
+            const response = await axios.get(`${process.env.REACT_APP_API_REQUEST_SERVER}/api/video/${encode}/get`, {
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded",
                     "Accept": "application/json; charset=utf-8",
                 }
             })
-            setUsername(response.data.user.username)
+            setVideo(response.data.video)
+            let timeAgo = moment(response.data.video.created_at).local().startOf('seconds').fromNow();
+            setVideoAgo(timeAgo)
+            let encodedId = base64.encode(String(response.data.video.id));
+            let encodedUserId = base64.encode(String(response.data.video.user_id));
+            getSubscribers(encodedUserId)
+            getUser(encodedUserId)
+            getVideoStats(encodedId)
+
+        } catch (error) {
+            console.log(error, 'error')
+        }
+    }
+
+    const getUser = async (userId) => {
+        try {
+            const response = await axios.get(`${process.env.REACT_APP_API_REQUEST_SERVER}/api/user/${userId}/get`, {
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "Accept": "application/json; charset=utf-8",
+                }
+            })
+            setAvatarName((response.data.user.first_name).substring(0, 1) + (response.data.user.last_name).substring(0, 1));
+            setUsername(response.data.user.username);
+            if (response.data.user.profile_image !== null) {
+                setUserImage(response.data.user.profile_image)
+            } else {
+                setUserImage(response.data.user.color)
+            }
         } catch (error) {
             console.log(error)
         }
@@ -87,55 +118,52 @@ const VideoScreen = () => {
 
     const getSubscribers = async (userId) => {
         try {
-            const response = await axios.get(`http://10.0.2.2:8000/api/user/${userId}/subscribers`, {
+            const response = await axios.get(`${process.env.REACT_APP_API_REQUEST_SERVER}/api/user/${userId}/subscribers`, {
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded",
                     "Accept": "application/json; charset=utf-8",
                 }
             })
             setSubscribers(response.data.subscribers)
+        } catch (error) {
+        }
+    }
 
+
+    const [nbrComments, setNbrComments] = useState(0);
+    const [nbreLike, setNbreLike] = useState(0);
+    const [nbreDislike, setNbreDislike] = useState(0);
+    const [views, setViews] = useState(0);
+    const getVideoStats = async (id) => {
+        id = base64.encode(String(id));
+        try {
+            const response = await axios.get(`${process.env.REACT_APP_API_REQUEST_SERVER}/api/video/${id}/stats`)
+            setNbrComments(response.data.stats.comments)
+            setNbreLike(response.data.stats.likes)
+            setNbreDislike(response.data.stats.dislikes)
+            setViews(response.data.stats.views)
         } catch (error) {
             console.log(error)
-
         }
     }
 
-    const getVideo = async () => {
-        try {
-            const id = base64.encode('4');
-            const response = await axios.get(`http://10.0.2.2:8000/api/video/4/get`, {
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                    "Accept": "application/json; charset=utf-8",
-                }
-            })
-            setVideo(response.data.video);
-            response.data.video.created_at = moment.utc(response.data.video.created_at).local().startOf('seconds').fromNow();
-            setVideoAgo(response.data.video.created_at)
-            getSubscribers(response.data.video.user_id)
-            getUser(response.data.video.user_id)
-        } catch (error) {
-            console.log(error, 'error')
-        }
-    }
 
     const commentsRef = useRef(null);
     // variables
-    const snapPoints = useMemo(() => ['25%r', '50%', '100%'], []);
+    const snapPoints = useMemo(() => ['40%'], []);
     // callbacks
     const openComments = () => {
-        commentsRef.current.expand();
+        commentsRef.current.present();
     }
 
     useEffect(() => {
-        getVideo()
-    }, [userId, username])
+        getVideo(encode)
+        getVideoStats(id)
+    }, [route.params.id])
 
     return (
-
-        <View style={{backgroundColor: '#141414', flex: 1}}>
-            <VideoPlayer videoURI={video.video} rthumbnailURI={video.thumbnail}/>
+        <View style={{backgroundColor: '#141414', flex: 1, marginBottom: 10}}>
+            <VideoPlayer videoURI={`${process.env.REACT_APP_API_REQUEST_SERVER}/${video.video}`} thumbnailURI={video.thumbnail}/>
 
             <View style={{flex: 1}}>
                 <View style={styles.videoInfoContainer}>
@@ -143,7 +171,8 @@ const VideoScreen = () => {
                         #WhyFlutterWhenReactNative</Text>
                     <Text style={styles.title}>{video.title}</Text>
                     <Text style={styles.subtitle}>{video.description}</Text>
-                    <Text style={styles.subtitle}>{username} - {videoAgo}</Text>
+                    <Text style={styles.subtitle}>Nombre de vues : {views}</Text>
+                    <Text style={styles.subtitle}>{videoAgo}</Text>
                 </View>
 
                 {/*    Action list */}
@@ -153,7 +182,7 @@ const VideoScreen = () => {
                             {liked ?
                                 <AntDesign name="like1" size={20} onPress={handleLike} color={"lightgrey"}/> :
                                 <AntDesign name={'like2'} size={20} onPress={handleLike} color={'lightgrey'}/>}
-                            <Text style={styles.actionText}>{liked ? likes : likes}</Text>
+                            <Text style={styles.actionText}>{nbreLike}</Text>
                         </View>
                         <View style={styles.actionListItem}>
                             {disliked ?
@@ -161,7 +190,7 @@ const VideoScreen = () => {
                                            color={"lightgrey"}/> :
                                 <AntDesign name={'dislike2'} size={20} onPress={handleDislike}
                                            color={'lightgrey'}/>}
-                            <Text style={styles.actionText}>{disliked ? dislikes : dislikes}</Text>
+                            <Text style={styles.actionText}>{nbreDislike}</Text>
                         </View>
                         <View style={styles.actionListItem}>
                             <MaterialCommunityIcons name="share-outline" size={20} color={"lightgrey"}/>
@@ -187,57 +216,62 @@ const VideoScreen = () => {
                     borderTopWidth: 1,
                     borderBottomWidth: 1
                 }}>
-                    <EvilIcons name={'user'} size={28} color={'lightgrey'}/>
+                    <View style={{
+                        backgroundColor: `${userImage}`,
+                        elevation: 10,
+                        width: 40,
+                        height: 40,
+                        borderRadius: 30,
+                        alignItems: "center",
+                        justifyContent: 'center'
+                    }}>
+                        <Text style={{color: '#fff'}}>{avatarName}
+                        </Text>
+                    </View>
                     <View style={{marginHorizontal: 10, flex: 1}}>
                         <Text style={{color: 'lightgrey', fontSize: 14, fontWeight: 'bold'}}>{username}</Text>
                         <Text style={{color: 'grey', fontSize: 14}}>{subscribers} subscribers</Text>
                     </View>
                     <Text style={{color: 'red', fontSize: 16, fontWeight: '600', padding: 10}}>Subscribe</Text>
                 </View>
-
                 {/*    Comments */}
                 <Pressable onPress={openComments} style={{
                     padding: 4,
                     marginVertical: 4,
+                    borderColor: '#3d3d3d',
                 }}>
-                    <Text style={{color: 'grey', fontSize: 14, fontWeight: 'bold'}}>Comments</Text>
-                    <View style={{flexDirection: 'row', marginVertical: 10, alignItems: 'center'}}>
-                        <EvilIcons name={'user'} size={24} color={'lightgrey'}/>
-                        <Text style={{color: 'lightgrey', marginLeft: 10}}>ReactNative</Text>
-                    </View>
+                    <Text style={{color: 'grey', fontSize: 14, fontWeight: 'bold'}}>Comments : {nbrComments}</Text>
                 </Pressable>
                 {/*    All comments */}
-                <BottomSheet
+                <BottomSheetModal
                     ref={commentsRef}
-                    index={1}
+                    index={0}
                     enablePanDownToClose={true}
                     snapPoints={snapPoints}
-                >
-                    <View style={styles.contentContainer}>
-                        <Text>Awesome 🎉</Text>
-                    </View>
-                </BottomSheet>
+                    backgroundComponent={({style}) => <View
+                        style={[style, {backgroundColor: '#444444', borderRadius: 8, width: '100%'}]}/>}>
+                    <VideoComments videoId={video.id}/>
+                </BottomSheetModal>
             </View>
         </View>
     );
-
 };
 
-const videoUnderScreen = () => {
+const VideoUnderScreen = () => {
     const [videosUnder, setVideosUnder] = React.useState([]);
     const [isLoading, setIsLoading] = React.useState(true);
     const [videoAgo, setVideoAgo] = React.useState('');
     const getVideoUnder = async () => {
         try {
-            const response = await axios.get(`http://10.0.2.2:8000/api/video/all`, {
+            const response = await axios.get(`${process.env.REACT_APP_API_REQUEST_SERVER}/api/video/all`, {
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json; charset=utf-8',
+                    "Content-Type": "application/json",
                 }
             })
-
-            setVideosUnder(response.data.videos)
-
+            // Object.keys(response.data.videos).map(function (key) {
+            //         setVideosUnder(response.data.videos[key])
+            // })
+            setVideosUnder(Object.values(response.data.videos))
             setIsLoading(false);
         } catch (error) {
             console.log(error)
@@ -249,13 +283,15 @@ const videoUnderScreen = () => {
     return (
         <SafeAreaView style={{backgroundColor: "#141414"}}>
             {isLoading ? <ActivityIndicator size="large" color="#fff" style={{marginTop: 100}}/> :
-                <FlatList data={videosUnder} keyExtractor={({id}, index) => id} renderItem={({item}) => (
-                    <VideoListItem video={item} videoAgo={videoAgo}/>)}
-                          ListHeaderComponent={VideoScreen}
+                <BottomSheetModalProvider>
+                    <FlatList data={videosUnder} keyExtractor={(item) => item.id} renderItem={({item}) => (
+                        <VideoListItem video={item} videoAgo={videoAgo}/>)}
+                              ListHeaderComponent={VideoScreen}
+                    />
+                </BottomSheetModalProvider>}
 
-                />}
         </SafeAreaView>
     )
 }
 
-export default videoUnderScreen;
+export default VideoUnderScreen;
