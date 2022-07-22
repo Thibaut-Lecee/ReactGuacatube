@@ -27,20 +27,21 @@ const Login = () => {
     const [userId, setUserId] = useState('')
     const Authentification = async (data) => {
         try {
-            // const response = await axios.post('http://83.114.163.44/api/auth/login', {
-            //     email: data.email,
-            //     password: data.password,
-            // })
-            const response = await axios.post('http://10.0.2.2:8000/api/auth/login', {
+            const response = await axios.post(`${process.env.REACT_APP_API_REQUEST_SERVER}/api/auth/login`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json; charset=utf-8',
+                },
                 email: data.email,
                 password: data.password,
-            })
 
+            })
             if (response.data.success === true) {
                 setIsAuthenticated(true)
                 navigation.navigate('HomeStack', {
                     isAuthenticated: true,
                 })
+                await storeUser(response.data)
                 setUserId(response.data.id)
             } else {
                 setMessageError(true)
@@ -48,25 +49,23 @@ const Login = () => {
             }
         } catch (error) {
             //   set message if error
-            console.log(error)
+            console.log(error.response.data)
         }   //    ernestine86@example.com
     }
     const sendEmailVerification = async () => {
         console.log('sendEmailVerification')
     }
 
-    const storeData = async (userId) => {
+    const storeUser = async (value) => {
         try {
-            console.log(userId)
-            await AsyncStorage.setItem('userId', JSON.stringify(userId))
-        } catch (e) {
-            console.log(e)
+            await AsyncStorage.setItem("user", JSON.stringify(value));
+        } catch (error) {
+            console.log(error);
         }
-    }
+    };
 
     return (
         <ScrollView showsHorizontalScrollIndicator={false} showsVerticalScrollIndicator={false}>
-
             <View style={styles.container}>
                 <Image source={require('../../assets/logo.png')} style={[styles.logo, {height: height * 0.1}]}
                        resizeMode={"contain"}/>
@@ -111,9 +110,12 @@ const Login = () => {
                                 fontWeight: "bold"
                             }}>{message}</Text>
                         </View>
-                        <Pressable style={styles.buttonResend} onPress={sendEmailVerification}>
-                            <Text style={styles.buttonText}>Renvoyer un email de vérification</Text>
-                        </Pressable>
+                        <>
+                            {message === "Email not verified" ?
+                                <Pressable style={styles.buttonResend} onPress={sendEmailVerification}>
+                                    <Text style={styles.buttonText}>Renvoyer un email de vérification</Text>
+                                </Pressable> : null}
+                        </>
                     </> :
                     null}
             </View>

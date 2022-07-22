@@ -80,6 +80,7 @@ const VideoScreen = () => {
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded",
                     "Accept": "application/json; charset=utf-8",
+                    'Authorization': `Basic dGhsYzprZXk=`
                 }
             })
             setVideo(response.data.video)
@@ -102,6 +103,7 @@ const VideoScreen = () => {
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded",
                     "Accept": "application/json; charset=utf-8",
+                    'Authorization': `Basic dGhsYzprZXk=`
                 }
             })
             setAvatarName((response.data.user.first_name).substring(0, 1) + (response.data.user.last_name).substring(0, 1));
@@ -120,6 +122,7 @@ const VideoScreen = () => {
         try {
             const response = await axios.get(`${process.env.REACT_APP_API_REQUEST_SERVER}/api/user/${userId}/subscribers`, {
                 headers: {
+                    'Authorization': `Basic dGhsYzprZXk=`,
                     "Content-Type": "application/x-www-form-urlencoded",
                     "Accept": "application/json; charset=utf-8",
                 }
@@ -135,9 +138,12 @@ const VideoScreen = () => {
     const [nbreDislike, setNbreDislike] = useState(0);
     const [views, setViews] = useState(0);
     const getVideoStats = async (id) => {
-        id = base64.encode(String(id));
         try {
-            const response = await axios.get(`${process.env.REACT_APP_API_REQUEST_SERVER}/api/video/${id}/stats`)
+            const response = await axios.get(`${process.env.REACT_APP_API_REQUEST_SERVER}/api/video/${id}/stats`,{
+                headers: {
+                    'Authorization': `Basic dGhsYzprZXk=`,
+                }
+            })
             setNbrComments(response.data.stats.comments)
             setNbreLike(response.data.stats.likes)
             setNbreDislike(response.data.stats.dislikes)
@@ -146,8 +152,6 @@ const VideoScreen = () => {
             console.log(error)
         }
     }
-
-
     const commentsRef = useRef(null);
     // variables
     const snapPoints = useMemo(() => ['40%'], []);
@@ -158,13 +162,12 @@ const VideoScreen = () => {
 
     useEffect(() => {
         getVideo(encode)
-        getVideoStats(id)
+        getVideoStats(encode)
     }, [route.params.id])
 
     return (
         <View style={{backgroundColor: '#141414', flex: 1, marginBottom: 10}}>
             <VideoPlayer videoURI={`${process.env.REACT_APP_API_REQUEST_SERVER}/${video.video}`} thumbnailURI={video.thumbnail}/>
-
             <View style={{flex: 1}}>
                 <View style={styles.videoInfoContainer}>
                     <Text style={styles.tags}>#ReactNativeApp #ReactNative > #Flutter
@@ -265,7 +268,9 @@ const VideoUnderScreen = () => {
         try {
             const response = await axios.get(`${process.env.REACT_APP_API_REQUEST_SERVER}/api/video/all`, {
                 headers: {
+                    'Authorization': `Basic dGhsYzprZXk=`,
                     "Content-Type": "application/json",
+
                 }
             })
             // Object.keys(response.data.videos).map(function (key) {

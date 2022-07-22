@@ -2,7 +2,7 @@ import React, {useRef, useState} from 'react';
 import {Text, View, StyleSheet, Image, Pressable, ScrollView} from "react-native";
 import {useNavigation} from "@react-navigation/native";
 
-const VideoListItem = ({video, videoAgo}) => {
+const VideoListItem = ({video}) => {
     const navigation = useNavigation();
 
     const openVideoPage = () => {
@@ -21,8 +21,6 @@ const VideoListItem = ({video, videoAgo}) => {
                         <Text style={styles.time}>{video.duration} secondes</Text>
                     </View>
                 </View>
-
-
                 {/*Container informations video */}
                 <View style={styles.titleRow}>
                     {/* <Image source={{uri: user.avatar}} /> */}

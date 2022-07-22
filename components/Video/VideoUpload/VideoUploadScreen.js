@@ -10,12 +10,22 @@ import axios from "axios";
 import base64 from "react-native-base64";
 import picker from "react-native-web/dist/exports/Picker";
 import {FileSystem} from "expo";
+// import storageData from "../../Storage/LocalStorage";
 
 const VideoUploadScreen = () => {
 
     const [video, setVideo] = React.useState('');
     const {control, handleSubmit, formState: {errors}, watch} = useForm()
 
+    const getUser = async () => {
+        try {
+            const savedUser = await AsyncStorage.getItem("user");
+            const currentUser = JSON.parse(savedUser);
+            console.log(currentUser);
+        } catch (error) {
+            console.log(error);
+        }
+    };
 
     let openVideoPickerAsync = async (data) => {
         let permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -27,21 +37,15 @@ const VideoUploadScreen = () => {
             mediaTypes: ImagePicker.MediaTypeOptions.Videos,
             allowsEditing: true,
             quality: 1,
-            type: "mp4",
+            contentType: "video/mp4",
         });
         if (!pickerResult.cancelled) {
             setVideo(pickerResult.uri);
 
-            const payload = new FormData();
-            payload.append('video', {
-                uri: pickerResult.uri,
-                name: pickerResult.uri.split('/').pop(),
-                duration: pickerResult.duration,
-            })
             let userId = base64.encode('1')
             try {
-                const uploadVideo = await axios.post(`${process.env.REACT_APP_API_LOCAL_SERVER}/api/user/${userId}/video/upload`, {
-                    video: payload,
+                const uploadVideo = await axios.post(`${process.env.REACT_APP_API_REQUEST_SERVER}/api/user/${userId}/video/upload`, {
+                    video: pickerResult.uri,
                     title: data.title,
                     description: data.description,
                     tags: data.tags,
@@ -58,6 +62,9 @@ const VideoUploadScreen = () => {
         }
     }
 
+    useEffect(() => {
+        getUser()
+    }, [])
     return (
         <ScrollView>
             <View style={styles.container}>

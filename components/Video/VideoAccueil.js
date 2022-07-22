@@ -1,8 +1,6 @@
 import React from 'react';
 import {FlatList, Text, View} from "react-native";
 import axios from "axios";
-import {instanceRequest} from "../../instanceRequest";
-import moment from 'moment';
 import VideoListItem from "./VideoScreen/VideoListItem";
 
 const VideoAccueil = () => {
@@ -13,6 +11,7 @@ const VideoAccueil = () => {
         try {
             const response = await axios.get(`${process.env.REACT_APP_API_REQUEST_SERVER}/api/video/all`, {
                 headers: {
+                    'Authorization': `Basic dGhsYzprZXk=`,
                     'Content-Type': 'application/json',
                     'Accept': 'application/json; charset=utf-8',
                 }, params: {
@@ -21,10 +20,9 @@ const VideoAccueil = () => {
                 }
             })
             setVideos(Object.values(response.data.videos));
-
             setIsLoading(false);
         } catch (error) {
-            console.log(error)
+            console.log(error.response.data)
         }
     }
     React.useEffect(() => {
@@ -35,7 +33,7 @@ const VideoAccueil = () => {
         <View>
             {isLoading ? <Text>Loading...</Text> : (
                 <FlatList data={videos}  keyExtractor={(item) => item.id} renderItem={({item}) => (
-                    <VideoListItem video={item} videoAgo={videoAgo}/>
+                    <VideoListItem video={item}/>
                 )}
                 />
             )}

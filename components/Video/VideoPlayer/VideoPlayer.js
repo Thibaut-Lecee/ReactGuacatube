@@ -14,16 +14,16 @@ const VideoPlayer = ({videoURI, thumbnailURI}) => {
                 posterStyle={{resizeMode: ResizeMode.COVER,}}
                 resizeMode={ResizeMode.CONTAIN}
                 usePoster={true}
-                onFullscreenUpdate={() => {
-                    if (Dimensions.get('window').height > Dimensions.get('window').width) {
-                        //Device is in portrait mode, rotate to landscape mode.
-                        ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
-                    }
-                    else {
-                        //Device is in landscape mode, rotate to portrait mode.
-                        ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT);
-                    }
-                }}
+                // onFullscreenUpdate={() => {
+                //     if (Dimensions.get('window').height > Dimensions.get('window').width) {
+                //         //Device is in portrait mode, rotate to landscape mode.
+                //         ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
+                //     }
+                //     else {
+                //         //Device is in landscape mode, rotate to portrait mode.
+                //         ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT);
+                //     }
+                // }}
                 useNativeControls={true}
             />
         </View>

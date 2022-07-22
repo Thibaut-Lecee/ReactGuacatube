@@ -27,7 +27,7 @@ const BottomTab = createBottomTabNavigator();
 
 export default function BottomTabNavigator() {
     const colorScheme = useColorScheme();
-
+    const [isAuthenticated, setIsAuthenticated] = React.useState(false);
     return (
         <BottomTab.Navigator
             initialRouteName="Home"
@@ -64,6 +64,7 @@ export default function BottomTabNavigator() {
                     headerTitle: 'Upload Video'
                 }}
             />
+            {isAuthenticated ?
             <BottomTab.Screen
                 name="Subscriptions"
                 component={Subscriptions}
@@ -71,8 +72,9 @@ export default function BottomTabNavigator() {
                     tabBarIcon: ({color}) => (
                         <MaterialIcons name="subscriptions" size={24} color={color}/>
                     ),
+                    headerTitle: 'Profile & Settings'
                 }}
-            />
+            /> : null}
         </BottomTab.Navigator>
     );
 }

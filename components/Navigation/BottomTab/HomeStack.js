@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {View, Text, Image, SafeAreaView, Pressable} from 'react-native';
 import {createStackNavigator} from '@react-navigation/stack';
 import HomeScreen from '../../Accueil/Home';
@@ -8,6 +8,8 @@ import {useNavigation, useRoute} from "@react-navigation/native";
 import Login from "../../Authentification/Login";
 import Register from "../../Authentification/Register";
 import SearchScreen from "../../Video/Search/SearchScreen";
+import ProfileScreen from "../../User/ProfileScreen";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const logo = require('../../../assets/logo.png');
 
@@ -17,7 +19,20 @@ const HomeStack = createStackNavigator();
 
 function CustomHeader() {
     const navigation = useNavigation();
-
+    const [isAuthenticated, setIsAuthenticated] = React.useState(false);
+    const getUser = async () => {
+        try {
+            const savedUser = await AsyncStorage.getItem("user");
+            const currentUser = JSON.parse(savedUser);
+            console.log(currentUser);
+            setIsAuthenticated(true);
+        } catch (error) {
+            console.log(error);
+        }
+    };
+    useEffect(() => {
+        getUser()
+    }, []);
     return (
         <SafeAreaView style={{backgroundColor: '#141414'}}>
             <View
@@ -37,11 +52,16 @@ function CustomHeader() {
                     <Pressable onPress={() => navigation.navigate('Search')}>
                         <AntDesign name="search1" size={22} color="white"/>
                     </Pressable>
-                    <Pressable onPress={() => navigation.navigate("Login")}>
-                        <FontAwesome name="user-circle-o" size={22} color="white"/>
-                    </Pressable>
+                    <>
+                        {isAuthenticated ?
+                            <Pressable onPress={() => navigation.navigate('Profile')}>
+                                <FontAwesome name="user" size={22} color="white"/>
+                            </Pressable> :
+                            <Pressable onPress={() => navigation.navigate("Login")}>
+                                <Text style={{color: 'white', fontSize: 18}}>Login</Text>
+                            </Pressable>}
+                    </>
                 </View>
-
             </View>
         </SafeAreaView>
     );
@@ -69,6 +89,10 @@ function HomeStackComponent() {
             name='Search'
             component={SearchScreen}
         />
+            <HomeStack.Screen
+                name='Profile'
+                component={ProfileScreen}
+            />
         </HomeStack.Navigator>
     );
 }
