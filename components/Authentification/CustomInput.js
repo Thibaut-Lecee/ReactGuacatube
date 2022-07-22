@@ -29,9 +29,7 @@ const CustomInput = ({control, name, rules = {}, placeholder, secureTextEntry}) 
 
 const styles = StyleSheet.create({
     container: {
-        width: '70%',
         alignItems: 'center',
-        borderWidth: 1,
         borderRadius: 5,
         paddingHorizontal: 10,
         marginVertical: 5,
@@ -44,7 +42,8 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         borderWidth: 2,
         borderRadius: 5,
-        width: '60%'
+        width: '100%',
+        height: 35
     }, error: {
         textAlign: 'center',
         color: 'red',

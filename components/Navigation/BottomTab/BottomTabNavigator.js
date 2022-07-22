@@ -42,7 +42,7 @@ export default function BottomTabNavigator() {
                     tabBarIcon: ({color}) => (
                         <Foundation name="home" size={24} color={color}/>
                     ),
-                    headerTitle: 'Accueil'
+                    headerTitle: 'React App'
                 }}
             />
             <BottomTab.Screen

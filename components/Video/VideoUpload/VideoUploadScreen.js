@@ -13,8 +13,8 @@ import {FileSystem} from "expo";
 // import storageData from "../../Storage/LocalStorage";
 
 const VideoUploadScreen = () => {
-
     const [video, setVideo] = React.useState('');
+
     const {control, handleSubmit, formState: {errors}, watch} = useForm()
 
     const getUser = async () => {
@@ -41,8 +41,8 @@ const VideoUploadScreen = () => {
         });
         if (!pickerResult.cancelled) {
             setVideo(pickerResult.uri);
-
             let userId = base64.encode('1')
+
             try {
                 const uploadVideo = await axios.post(`${process.env.REACT_APP_API_REQUEST_SERVER}/api/user/${userId}/video/upload`, {
                     video: pickerResult.uri,
@@ -56,7 +56,6 @@ const VideoUploadScreen = () => {
             } catch (error) {
                 console.log(error.response.data, 'error')
             }
-
         } else {
             console.log("cancelled")
         }
@@ -80,7 +79,9 @@ const VideoUploadScreen = () => {
                 <CustomInput name={'category'} placeholder={'Category'} control={control}
                              rules={{required: 'category is required'}}/>
                 <CustomInput name={'type'} placeholder={'type : public || private '} control={control}
-                             rules={{required: 'type is required'}}/>
+                             rules={{required: 'type is required', pattern: {
+                                    value: /^(public|private)$/,
+                                 }}}/>
                 <Button title={"Upload a video"} onPress={handleSubmit(openVideoPickerAsync)} style={styles.button}/>
                 <VideoPlayer videoURI={video}/>
             </View>
@@ -91,7 +92,7 @@ const VideoUploadScreen = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: '#141414',
         alignItems: 'center',
     },
     thumbnail: {

@@ -10,3 +10,4 @@ export default async function storageData() {
         console.log(error);
     }
 }
+

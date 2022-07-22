@@ -154,7 +154,7 @@ const VideoScreen = () => {
     }
     const commentsRef = useRef(null);
     // variables
-    const snapPoints = useMemo(() => ['40%'], []);
+    const snapPoints = useMemo(() => ['68%'], []);
     // callbacks
     const openComments = () => {
         commentsRef.current.present();

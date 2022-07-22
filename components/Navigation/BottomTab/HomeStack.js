@@ -23,16 +23,21 @@ function CustomHeader() {
     const getUser = async () => {
         try {
             const savedUser = await AsyncStorage.getItem("user");
+            if(savedUser !== null){
             const currentUser = JSON.parse(savedUser);
             console.log(currentUser);
             setIsAuthenticated(true);
+            }
+            else {
+                setIsAuthenticated(false)
+            }
         } catch (error) {
             console.log(error);
         }
     };
     useEffect(() => {
         getUser()
-    }, []);
+    }, [isAuthenticated]);
     return (
         <SafeAreaView style={{backgroundColor: '#141414'}}>
             <View
@@ -59,7 +64,8 @@ function CustomHeader() {
                             </Pressable> :
                             <Pressable onPress={() => navigation.navigate("Login")}>
                                 <Text style={{color: 'white', fontSize: 18}}>Login</Text>
-                            </Pressable>}
+                            </Pressable>
+                        }
                     </>
                 </View>
             </View>
@@ -92,6 +98,9 @@ function HomeStackComponent() {
             <HomeStack.Screen
                 name='Profile'
                 component={ProfileScreen}
+        options={{
+            headerTitle: 'Profile'
+        }}
             />
         </HomeStack.Navigator>
     );

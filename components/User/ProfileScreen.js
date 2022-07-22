@@ -33,45 +33,45 @@ const ProfileScreen = () => {
     const logout = async () => {
         try {
             await AsyncStorage.removeItem("user");
+            alert("Vous êtes bien déconnectée")
             navigation.navigate('Login');
 
         } catch (error) {
             console.log(error);
         }
     }
+
     useEffect(() => {
         getUser()
     }, [])
 
-
-    useEffect(() => {
-    }, [])
     return (
         <View style={{flex: 1, backgroundColor: "#141414"}}>
             <View style={{justifyContent: "center"}}>
-                        <View style={{
-                            paddingVertical: 8,
-                            alignItems: 'center',
-                            borderColor: '#3d3d3d',
-                            marginVertical: 5,
-                        }}>
-            <Text style={styles.text}>ProfileScreen</Text>
-                            {user.banner_image !== null ?
-                                <Image />
-                                :
-                            <View style={{
-                                backgroundColor: `${user.color}`,
-                                elevation: 10,
-                                width: 40,
-                                height: 40,
-                                borderRadius: 30,
-                                alignItems: "center",
-                                justifyContent: 'center'
-                            }}>
-                            <Text style={{color: 'white'}}>{user.first_name}</Text>
-                            </View>
-                             }
-                        </View>
+                <View style={{
+                    paddingVertical: 8,
+                    alignItems: 'center',
+                    borderColor: '#3d3d3d',
+                    marginVertical: 5,
+                }}>
+                    <Text style={styles.text}>ProfileScreen</Text>
+                    <View style={{
+                        backgroundColor: `${user.color}`,
+                        elevation: 10,
+                        width: 40,
+                        height: 40,
+                        borderRadius: 30,
+                        alignItems: "center",
+                        justifyContent: 'center'
+                    }}>
+                        <Text style={styles.text}>{user.username}</Text>
+                    </View>
+                    <Text style={styles.text}>Prénom : {user.first_name} </Text>
+                    <Text style={styles.text}>Nom : {user.first_name} </Text>
+                    <Text style={styles.text}>email : {user.email} </Text>
+
+                    <Text style={styles.text}>{user.role === 1 ? "Viewer" : "Admin"}</Text>
+                </View>
                 <Pressable style={styles.button} onPress={logout}>
                     <Text style={styles.buttonText}>Logout</Text>
                 </Pressable>

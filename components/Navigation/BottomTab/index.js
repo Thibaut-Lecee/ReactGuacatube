@@ -12,6 +12,7 @@ import { ColorSchemeName } from 'react-native';
 // import NotFoundScreen from '../screens/NotFoundScreen';
 import VideoScreen from '../../Video/VideoScreen/VideoScreen';
 import BottomTabNavigator from './BottomTabNavigator';
+import HomeStack from "./HomeStack";
 export default function Navigation({colorScheme}) {
   return (
     <NavigationContainer
